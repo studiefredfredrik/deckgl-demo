@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>deckgl-demo + google maps</title>
+
+  <!-- webpack generated output  -->
+  <script src="main.js"></script>
+  
+  <!-- You need a google-maps api key for this project to work -->
+  <script defer src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_API_KEY&callback=initMap"></script>
+
+  <style>
+    body{
+      margin: 0;
+    }
+    #map{
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+</body>
+</html>
