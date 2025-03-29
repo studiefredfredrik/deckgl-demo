@@ -10,6 +10,8 @@ WORKDIR /app
 RUN npm ci
 RUN npm run build
 
+RUN chown node:node /app/public/index.html
+
 USER node
 
 ENTRYPOINT ["node", "server.js"]
