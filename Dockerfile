@@ -10,6 +10,7 @@ WORKDIR /app
 RUN npm ci
 RUN npm run build
 
+# API key is replaced during startup by server.js and only available in runtime, so the process needs write access
 RUN chown node:node /app/public/index.html
 
 USER node
