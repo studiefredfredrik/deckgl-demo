@@ -74,3 +74,30 @@ export async function transformInputDataForDisplay(datasetUrl) {
     return [];
   }
 } 
+
+/*
+
+The display function requires the following format:
+
+[
+  {
+  "heading": "Earthquake in alaska",
+  "subHeading": "Magnitude 1.5",
+	"notes": "There was a earthquake on september 4'th and it was rather small, and didn't do much damage"
+  "latitude": 40.888,
+  "longitude": -73.5899,
+	"magnitude": 1.5, // use this for how large the area of the dots on the scatter plot is
+  "color": null, // paint it red if null 
+ },
+ {
+  "heading": "Earthquake in Maine",
+  "subHeading": "Magnitude 1.0",
+	"notes": "There was a earthquake on september 5'th and it was small, no damage"
+  "latitude": 39.888,
+  "longitude": -74.5899,
+	"magnitude": 1.0, 
+  "color": "#FFFFFF", 
+ },
+]
+
+*/

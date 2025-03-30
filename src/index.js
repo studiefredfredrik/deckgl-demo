@@ -109,7 +109,7 @@ window.initMap = () => {
   const map = new google.maps.Map(document.getElementById('map'),{
     center: {lat: 40.0, lng: -100.0},
     zoom: 5,
-    mapId: null
+    mapId: null // retro: 'a8f775bde9a0aa36'
   })
 
   const overlay = new GoogleMapsOverlay({
