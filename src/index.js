@@ -11,20 +11,16 @@ tooltip.style.zIndex = 1;
 tooltip.style.opacity = '0.9'
 tooltip.style.pointerEvents = 'none';
 
-function updateTooltip({x, y, object}) {
-  if (object) {
-    tooltip.style.display = 'block';
-    tooltip.style.left = `${x}px`;
-    tooltip.style.top = `${y}px`;
-    tooltip.innerHTML = `
-      <div style="background-color: white; border-radius: 4px; padding: 4px;">
-        <h1 style="font-size: 14px;">Incident: ${object.incident_id || 'Earthquake'}</h1>
-        <div style="font-size: 12px;">${object.n_killed ? `Killed: ${object.n_killed}` : `Magnitude: ${object.magnitude}`}</div>
-        <div style="font-size: 10px; max-width: 100px">${object.notes || ''}</div>
-      </div>`
-  } else {
-    tooltip.style.display = 'none';
-  }
+function updateTooltip(x, y, heading, subheading, description) {
+  tooltip.style.display = 'block';
+  tooltip.style.left = `${x}px`;
+  tooltip.style.top = `${y}px`;
+  tooltip.innerHTML = `
+    <div style="background-color: white; border-radius: 4px; padding: 4px;">
+      <h1 style="font-size: 14px;">Incident: ${heading}</h1>
+      <div style="font-size: 12px;">${subheading}</div>
+      <div style="font-size: 10px; max-width: 100px">${description}</div>
+    </div>`
 }
 
 window.initMap = () => {
@@ -36,22 +32,38 @@ window.initMap = () => {
   menuContainer.style.bottom = '20px';
   menuContainer.style.left = '50%';
   menuContainer.style.transform = 'translateX(-50%)';
-  menuContainer.style.backgroundColor = 'white';
-  menuContainer.style.padding = '10px';
-  menuContainer.style.borderRadius = '4px';
-  menuContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+  menuContainer.style.display = 'flex';
+  menuContainer.style.gap = '20px';
   menuContainer.style.zIndex = '1000';
+  menuContainer.style.flexDirection = 'row';
+  menuContainer.style.flexWrap = 'wrap';
+  menuContainer.style.justifyContent = 'center';
 
-  // Create controls container
-  const controlsContainer = document.createElement('div');
-  controlsContainer.style.display = 'flex';
-  controlsContainer.style.flexDirection = 'column';
-  controlsContainer.style.gap = '10px';
+  // Add media query for smaller screens
+  const mediaQuery = window.matchMedia('(max-width: 600px)');
+  function handleScreenChange(e) {
+    menuContainer.style.flexDirection = e.matches ? 'column' : 'row';
+    menuContainer.style.gap = e.matches ? '10px' : '20px';
+  }
+  mediaQuery.addListener(handleScreenChange);
+  handleScreenChange(mediaQuery);
 
   // Create dataset selection container
   const datasetContainer = document.createElement('div');
+  datasetContainer.style.backgroundColor = 'white';
+  datasetContainer.style.padding = '10px';
+  datasetContainer.style.borderRadius = '4px';
+  datasetContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
   datasetContainer.style.display = 'flex';
   datasetContainer.style.gap = '20px';
+  datasetContainer.style.alignItems = 'center';
+  datasetContainer.style.minWidth = '200px';
+  datasetContainer.style.justifyContent = 'center';
+
+  const datasetLabel = document.createElement('div');
+  datasetLabel.textContent = 'Dataset:';
+  datasetLabel.style.fontWeight = 'bold';
+  datasetContainer.appendChild(datasetLabel);
 
   const gunDataRadio = document.createElement('input');
   gunDataRadio.type = 'radio';
@@ -68,11 +80,11 @@ window.initMap = () => {
 
   const gunDataLabel = document.createElement('label');
   gunDataLabel.htmlFor = 'gun-data';
-  gunDataLabel.textContent = 'Gun Violence Data';
+  gunDataLabel.textContent = 'Gun Violence';
 
   const earthquakeDataLabel = document.createElement('label');
   earthquakeDataLabel.htmlFor = 'earthquake-data';
-  earthquakeDataLabel.textContent = 'Earthquake Data';
+  earthquakeDataLabel.textContent = 'Earthquakes';
 
   datasetContainer.appendChild(gunDataRadio);
   datasetContainer.appendChild(gunDataLabel);
@@ -81,8 +93,20 @@ window.initMap = () => {
 
   // Create visualization type container
   const vizContainer = document.createElement('div');
+  vizContainer.style.backgroundColor = 'white';
+  vizContainer.style.padding = '10px';
+  vizContainer.style.borderRadius = '4px';
+  vizContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
   vizContainer.style.display = 'flex';
   vizContainer.style.gap = '20px';
+  vizContainer.style.alignItems = 'center';
+  vizContainer.style.minWidth = '200px';
+  vizContainer.style.justifyContent = 'center';
+
+  const vizLabel = document.createElement('div');
+  vizLabel.textContent = 'View:';
+  vizLabel.style.fontWeight = 'bold';
+  vizContainer.appendChild(vizLabel);
 
   const scatterplotRadio = document.createElement('input');
   scatterplotRadio.type = 'radio';
@@ -110,9 +134,8 @@ window.initMap = () => {
   vizContainer.appendChild(heatmapRadio);
   vizContainer.appendChild(heatmapLabel);
 
-  controlsContainer.appendChild(datasetContainer);
-  controlsContainer.appendChild(vizContainer);
-  menuContainer.appendChild(controlsContainer);
+  menuContainer.appendChild(datasetContainer);
+  menuContainer.appendChild(vizContainer);
   document.body.appendChild(menuContainer);
 
   const map = new google.maps.Map(document.getElementById('map'),{
@@ -131,6 +154,7 @@ window.initMap = () => {
     const visualization = vizContainer.querySelector('input[name="visualization"]:checked').value;
     
     let layer;
+    console.log('dataset',dataset)
     if (dataset === 'gun-data') {
       layer = visualization === 'scatterplot' 
         ? new ScatterplotLayer({
@@ -143,7 +167,17 @@ window.initMap = () => {
             getFillColor: d => d.n_killed > 0 ? [200, 0 , 40 , 150] : [255, 140, 0, 100],
             pickable: true,
             onHover: (info) => {
-              updateTooltip(info)
+              if (info.object) {
+                updateTooltip(
+                  info.x,
+                  info.y,
+                  info.object.incident_id || 'Gun Incident',
+                  `Killed: ${info.object.n_killed}`,
+                  info.object.notes || ''
+                )
+              } else {
+                tooltip.style.display = 'none';
+              }
             }
           })
         : new HeatmapLayer({
@@ -156,14 +190,24 @@ window.initMap = () => {
             threshold: 0.05,
             pickable: true,
             onHover: (info) => {
-              updateTooltip(info)
+              if (info.object) {
+                updateTooltip(
+                  info.x,
+                  info.y,
+                  info.object.incident_id || 'Gun Incident',
+                  `Killed: ${info.object.n_killed}`,
+                  info.object.notes || ''
+                )
+              } else {
+                tooltip.style.display = 'none';
+              }
             }
           });
     } else {
       console.log('Loading earthquake data...');
       try {
         // First try to fetch the data to verify it exists
-        fetch('./earthquakes_past_hour.json')
+        fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson')
           .then(response => {
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
@@ -171,65 +215,67 @@ window.initMap = () => {
             return response.json();
           })
           .then(data => {
-            console.log('Earthquake data structure:', data);
             // Check if data is an array or if it's nested in a property
             const earthquakes = Array.isArray(data) ? data : data.features || [];
             console.log('Number of earthquakes:', earthquakes.length);
-            console.log('Sample earthquake:', earthquakes[0]);
             
             // Transform the data to ensure consistent structure
-            const transformedData = earthquakes.map(eq => {
-              // Log the raw earthquake data to see its structure
-              console.log('Raw earthquake data:', eq);
-              
-              // Handle different possible data structures
-              const coords = eq.coordinates || eq.geometry?.coordinates || [eq.longitude, eq.latitude];
-              // Try different possible locations for magnitude
-              const magnitude = eq.magnitude || 
-                              eq.properties?.magnitude || 
-                              eq.properties?.mag || 
-                              eq.mag || 
-                              eq.properties?.properties?.magnitude;
-              
-              console.log('Extracted magnitude:', magnitude);
-              
-              return {
-                coordinates: coords,
-                magnitude: magnitude,
-                ...eq
-              };
-            });
+            const transformedData = earthquakes.map(eq => ({
+              coordinates: eq.coordinates || eq.geometry?.coordinates || [eq.longitude, eq.latitude],
+              magnitude: eq.magnitude || eq.properties?.magnitude || eq.properties?.mag || eq.mag || eq.properties?.properties?.magnitude || 0,
+              ...eq
+            }));
 
-            // Log magnitude values for debugging
-            console.log('Transformed data:', transformedData);
-            console.log('Magnitude values:', transformedData.map(d => d.magnitude));
+            // Log only essential information
+            console.log('Sample magnitude values:', transformedData.slice(0, 3).map(d => d.magnitude));
 
             layer = visualization === 'scatterplot'
               ? new ScatterplotLayer({
                   id: 'earthquake-scatterplot',
                   data: transformedData,
                   filled: true,
-                  radiusMaxPixels: 50,
-                  radiusMinPixels: 20,
+                  radiusUnits: 'meters',
+                  radiusScale: 100000, // 100km
+                  getRadius: d => d.magnitude * 1, // Make radius proportional to magnitude
                   getPosition: d => d.coordinates,
                   getFillColor: d => [255, 0, 0, 150],
                   pickable: true,
                   onHover: (info) => {
-                    updateTooltip(info)
+                    if (info.object) {
+                      updateTooltip(
+                        info.x,
+                        info.y,
+                        'Earthquake',
+                        `Magnitude: ${info.object.magnitude}`,
+                        info.object.notes || ''
+                      )
+                    } else {
+                      tooltip.style.display = 'none';
+                    }
                   }
                 })
               : new HeatmapLayer({
                   id: 'earthquake-heatmap',
                   data: transformedData,
                   getPosition: d => d.coordinates,
-                  getWeight: d => d.magnitude || 0,
+                  getWeight: d => d.magnitude * 0.1 || 0,
                   radiusPixels: 100,
                   intensity: 5,
                   threshold: 0.001,
                   colorRange: [[0, 0, 255, 0], [255, 0, 0, 255]],
                   pickable: true,
                   onHover: (info) => {
-                    updateTooltip(info)
+                    if (info.object) {
+                      updateTooltip(
+                        info.x,
+                        info.y,
+                        'Earthquake',
+                        `Magnitude: ${info.object.magnitude}`,
+                        info.object.notes || ''
+                      )
+                    } else {
+                      tooltip.style.display = 'none';
+                    }
                   }
                 });
             
