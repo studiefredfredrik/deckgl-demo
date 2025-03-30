@@ -30,7 +30,7 @@ function transformGunViolenceData(data) {
     latitude: incident.latitude,
     longitude: incident.longitude,
     magnitude: incident.n_killed,
-    radius: 10,
+    radius: 1,
     color: incident.n_killed > 0 ? hexToRGB('#C80028') : hexToRGB('#FF8C00')
   }));
 }

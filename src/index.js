@@ -21,12 +21,20 @@ function updateTooltip(x, y, data) {
     </div>`
 }
 
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
+
 window.initMap = () => {
   document.body.append(tooltip);
 
   // Create menu container
   const menuContainer = document.createElement('div');
   menuContainer.className = 'menu-container';
+
+  // Add mouse enter/leave handlers for menu
+  menuContainer.addEventListener('mouseenter', hideTooltip);
+  menuContainer.addEventListener('mouseleave', hideTooltip);
 
   // Create dataset selection container
   const datasetContainer = document.createElement('div');
@@ -53,27 +61,27 @@ window.initMap = () => {
 
   const vizLabel = document.createElement('div');
   vizLabel.className = 'control-label';
-  vizLabel.textContent = 'View:';
+  vizLabel.textContent = 'Views:';
   vizContainer.appendChild(vizLabel);
 
-  const scatterplotRadio = document.createElement('input');
-  scatterplotRadio.type = 'radio';
-  scatterplotRadio.id = 'scatterplot';
-  scatterplotRadio.name = 'visualization';
-  scatterplotRadio.value = 'scatterplot';
-  scatterplotRadio.checked = true;
+  const scatterplotCheckbox = document.createElement('input');
+  scatterplotCheckbox.type = 'checkbox';
+  scatterplotCheckbox.id = 'scatterplot';
+  scatterplotCheckbox.name = 'visualization';
+  scatterplotCheckbox.value = 'scatterplot';
+  scatterplotCheckbox.checked = true;
 
-  const heatmapRadio = document.createElement('input');
-  heatmapRadio.type = 'radio';
-  heatmapRadio.id = 'heatmap';
-  heatmapRadio.name = 'visualization';
-  heatmapRadio.value = 'heatmap';
+  const heatmapCheckbox = document.createElement('input');
+  heatmapCheckbox.type = 'checkbox';
+  heatmapCheckbox.id = 'heatmap';
+  heatmapCheckbox.name = 'visualization';
+  heatmapCheckbox.value = 'heatmap';
 
-  const hexagonRadio = document.createElement('input');
-  hexagonRadio.type = 'radio';
-  hexagonRadio.id = 'hexagon';
-  hexagonRadio.name = 'visualization';
-  hexagonRadio.value = 'hexagon';
+  const hexagonCheckbox = document.createElement('input');
+  hexagonCheckbox.type = 'checkbox';
+  hexagonCheckbox.id = 'hexagon';
+  hexagonCheckbox.name = 'visualization';
+  hexagonCheckbox.value = 'hexagon';
 
   const scatterplotLabel = document.createElement('label');
   scatterplotLabel.htmlFor = 'scatterplot';
@@ -87,11 +95,11 @@ window.initMap = () => {
   hexagonLabel.htmlFor = 'hexagon';
   hexagonLabel.textContent = 'Hexagon';
 
-  vizContainer.appendChild(scatterplotRadio);
+  vizContainer.appendChild(scatterplotCheckbox);
   vizContainer.appendChild(scatterplotLabel);
-  vizContainer.appendChild(heatmapRadio);
+  vizContainer.appendChild(heatmapCheckbox);
   vizContainer.appendChild(heatmapLabel);
-  vizContainer.appendChild(hexagonRadio);
+  vizContainer.appendChild(hexagonCheckbox);
   vizContainer.appendChild(hexagonLabel);
 
   menuContainer.appendChild(datasetContainer);
@@ -100,7 +108,8 @@ window.initMap = () => {
 
   const map = new google.maps.Map(document.getElementById('map'),{
     center: {lat: 40.0, lng: -100.0},
-    zoom: 5
+    zoom: 5,
+    mapId: null
   })
 
   const overlay = new GoogleMapsOverlay({
@@ -111,13 +120,13 @@ window.initMap = () => {
   // Handle layer switching
   async function updateLayer() {
     const datasetUrl = datasetSelect.value;
-    const visualization = vizContainer.querySelector('input[name="visualization"]:checked').value;
+    const enabledViews = Array.from(vizContainer.querySelectorAll('input[name="visualization"]:checked')).map(input => input.value);
     
     const data = await transformInputDataForDisplay(datasetUrl);
+    const layers = [];
     
-    let layer;
-    if (visualization === 'scatterplot') {
-      layer = new ScatterplotLayer({
+    if (enabledViews.includes('scatterplot')) {
+      layers.push(new ScatterplotLayer({
         id: 'scatterplot',
         data: data,
         filled: true,
@@ -131,12 +140,14 @@ window.initMap = () => {
           if (info.object) {
             updateTooltip(info.x, info.y, info.object);
           } else {
-            tooltip.style.display = 'none';
+            hideTooltip();
           }
         }
-      });
-    } else if (visualization === 'heatmap') {
-      layer = new HeatmapLayer({
+      }));
+    }
+
+    if (enabledViews.includes('heatmap')) {
+      layers.push(new HeatmapLayer({
         id: 'heatmap',
         data: data,
         getPosition: d => [d.longitude, d.latitude],
@@ -144,10 +155,12 @@ window.initMap = () => {
         radiusPixels: 30,
         intensity: 1,
         threshold: 0.05,
-        colorRange: [[0, 0, 255, 100], [255, 0, 0, 255]]
-      });
-    } else {
-      layer = new HexagonLayer({
+        colorRange: [[0, 0, 255, 100], [255, 0, 0, 255]],
+      }));
+    }
+
+    if (enabledViews.includes('hexagon')) {
+      layers.push(new HexagonLayer({
         id: 'hexagon',
         data: data,
         getPosition: d => [d.longitude, d.latitude],
@@ -155,14 +168,14 @@ window.initMap = () => {
         colorRange: [[0, 0, 255, 100], [255, 0, 0, 255]],
         elevationScale: 100,
         extruded: true,
-        radius: 1609,         
+        radius: 5000,         
         opacity: 0.6,        
         coverage: 0.88,
-        lowerPercentile: 50
-      });
+        lowerPercentile: 50,
+      }));
     }
     
-    overlay.setProps({ layers: [layer] });
+    overlay.setProps({ layers });
   }
 
   // Initial layer setup
