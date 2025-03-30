@@ -19,7 +19,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
       templateParameters: {
-        GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || 'YOUR_API_KEY'
+        GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || 'GOOGLE_API_KEY'
       }
     })
   ],

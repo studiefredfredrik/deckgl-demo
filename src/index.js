@@ -2,7 +2,7 @@
 
 import {GoogleMapsOverlay} from "@deck.gl/google-maps"
 import {ScatterplotLayer} from "@deck.gl/layers"
-import {HeatmapLayer} from "@deck.gl/aggregation-layers"
+import {HeatmapLayer, HexagonLayer} from "@deck.gl/aggregation-layers"
 import {AVAILABLE_DATASETS, transformInputDataForDisplay} from './transforms'
 import './styles.css'
 
@@ -69,6 +69,12 @@ window.initMap = () => {
   heatmapRadio.name = 'visualization';
   heatmapRadio.value = 'heatmap';
 
+  const hexagonRadio = document.createElement('input');
+  hexagonRadio.type = 'radio';
+  hexagonRadio.id = 'hexagon';
+  hexagonRadio.name = 'visualization';
+  hexagonRadio.value = 'hexagon';
+
   const scatterplotLabel = document.createElement('label');
   scatterplotLabel.htmlFor = 'scatterplot';
   scatterplotLabel.textContent = 'Scatterplot';
@@ -77,10 +83,16 @@ window.initMap = () => {
   heatmapLabel.htmlFor = 'heatmap';
   heatmapLabel.textContent = 'Heatmap';
 
+  const hexagonLabel = document.createElement('label');
+  hexagonLabel.htmlFor = 'hexagon';
+  hexagonLabel.textContent = 'Hexagon';
+
   vizContainer.appendChild(scatterplotRadio);
   vizContainer.appendChild(scatterplotLabel);
   vizContainer.appendChild(heatmapRadio);
   vizContainer.appendChild(heatmapLabel);
+  vizContainer.appendChild(hexagonRadio);
+  vizContainer.appendChild(hexagonLabel);
 
   menuContainer.appendChild(datasetContainer);
   menuContainer.appendChild(vizContainer);
@@ -123,7 +135,7 @@ window.initMap = () => {
           }
         }
       });
-    } else {
+    } else if (visualization === 'heatmap') {
       layer = new HeatmapLayer({
         id: 'heatmap',
         data: data,
@@ -133,6 +145,27 @@ window.initMap = () => {
         intensity: 1,
         threshold: 0.05,
         colorRange: [[0, 0, 255, 0], [255, 0, 0, 255]],
+        pickable: true,
+        onHover: (info) => {
+          if (info.object) {
+            updateTooltip(info.x, info.y, info.object);
+          } else {
+            tooltip.style.display = 'none';
+          }
+        }
+      });
+    } else {
+      layer = new HexagonLayer({
+        id: 'hexagon',
+        data: data,
+        getPosition: d => [d.longitude, d.latitude],
+        getWeight: d => d.magnitude || 0,
+        radius: 50000, // 50km hexagons
+        colorRange: [[0, 0, 255, 0], [255, 0, 0, 255]],
+        coverage: 0.8,
+        elevationRange: [0, 1000],
+        elevationScale: 100,
+        extruded: true,
         pickable: true,
         onHover: (info) => {
           if (info.object) {
