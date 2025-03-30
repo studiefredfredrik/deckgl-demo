@@ -151,7 +151,7 @@ window.initMap = () => {
         id: 'hexagon',
         data: data,
         getPosition: d => [d.longitude, d.latitude],
-        getElevationWeight: d => d.magnitude || 0,
+        getElevationWeight: d => d.radius || 0,
         colorRange: [[0, 0, 255, 100], [255, 0, 0, 255]],
         elevationScale: 100,
         extruded: true,
