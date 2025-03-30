@@ -1,4 +1,3 @@
-
 //us-gun-violence.web.app/gundata.json
 
 import {GoogleMapsOverlay} from "@deck.gl/google-maps"
@@ -42,10 +41,67 @@ const scatterplot = () => new ScatterplotLayer({
   }
 })
 
+const heatmap = () => new HeatmapLayer({
+  id: 'heatmap',
+  data: './gundata.json',
+  getPosition: d => [d.longitude, d.latitude],
+  getWeight: d => d.n_killed,
+  radiusPixels: 30,
+  intensity: 1,
+  threshold: 0.05,
+  pickable: true,
+  onHover: (info) => {
+    updateTooltip(info)
+  }
+})
+
 window.initMap = () => {
-
-
   document.body.append(tooltip);
+
+  // Create menu container
+  const menuContainer = document.createElement('div');
+  menuContainer.style.position = 'fixed';
+  menuContainer.style.bottom = '20px';
+  menuContainer.style.left = '50%';
+  menuContainer.style.transform = 'translateX(-50%)';
+  menuContainer.style.backgroundColor = 'white';
+  menuContainer.style.padding = '10px';
+  menuContainer.style.borderRadius = '4px';
+  menuContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+  menuContainer.style.zIndex = '1000';
+
+  // Create radio buttons for layer selection
+  const radioContainer = document.createElement('div');
+  radioContainer.style.display = 'flex';
+  radioContainer.style.gap = '20px';
+
+  const scatterplotRadio = document.createElement('input');
+  scatterplotRadio.type = 'radio';
+  scatterplotRadio.id = 'scatterplot';
+  scatterplotRadio.name = 'layer';
+  scatterplotRadio.value = 'scatterplot';
+  scatterplotRadio.checked = true;
+
+  const heatmapRadio = document.createElement('input');
+  heatmapRadio.type = 'radio';
+  heatmapRadio.id = 'heatmap';
+  heatmapRadio.name = 'layer';
+  heatmapRadio.value = 'heatmap';
+
+  const scatterplotLabel = document.createElement('label');
+  scatterplotLabel.htmlFor = 'scatterplot';
+  scatterplotLabel.textContent = 'Scatterplot';
+
+  const heatmapLabel = document.createElement('label');
+  heatmapLabel.htmlFor = 'heatmap';
+  heatmapLabel.textContent = 'Heatmap';
+
+  radioContainer.appendChild(scatterplotRadio);
+  radioContainer.appendChild(scatterplotLabel);
+  radioContainer.appendChild(heatmapRadio);
+  radioContainer.appendChild(heatmapLabel);
+  menuContainer.appendChild(radioContainer);
+  document.body.appendChild(menuContainer);
 
   const map = new google.maps.Map(document.getElementById('map'),{
     center: {lat: 40.0, lng: -100.0},
@@ -53,13 +109,17 @@ window.initMap = () => {
   })
 
   const overlay = new GoogleMapsOverlay({
-    layers: [
-      scatterplot()
-    ]
+    layers: [scatterplot()]
   })
   overlay.setMap(map)
 
-  // to do changes to the overlay (not used here tho)
-  // overlay.setProps({ layers: [] })
+  // Handle layer switching
+  radioContainer.addEventListener('change', (e) => {
+    if (e.target.value === 'scatterplot') {
+      overlay.setProps({ layers: [scatterplot()] });
+    } else {
+      overlay.setProps({ layers: [heatmap()] });
+    }
+  });
 }
 
