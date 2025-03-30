@@ -3,6 +3,8 @@ const path = require('path')
 const app = express()
 const port = 5000
 
+console.log('starting server...')
+
 setGoogleApiKeyFromEnv()
 
 app.use('/', express.static(path.join(__dirname, 'public')))
@@ -28,6 +30,7 @@ function setGoogleApiKeyFromEnv(){
         const replaced = contents.replace(`GOOGLE_API_KEY`, process.env.GOOGLE_API_KEY);
         writeFile(indexHtmlFilePath, replaced, 'utf-8', function (err) {
             if(err){
+                console.log('Error replacing GOOGLE_API_KEY', err)
                 throw err    
             }
             console.log('GOOGLE_API_KEY replaced')
