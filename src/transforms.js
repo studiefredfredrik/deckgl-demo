@@ -29,7 +29,8 @@ function transformGunViolenceData(data) {
     notes: incident.notes || 'No additional information available',
     latitude: incident.latitude,
     longitude: incident.longitude,
-    magnitude: 0.04,
+    magnitude: incident.n_killed,
+    radius: 10,
     color: incident.n_killed > 0 ? hexToRGB('#C80028') : hexToRGB('#FF8C00')
   }));
 }
@@ -47,6 +48,7 @@ function transformEarthquakeData(data) {
     latitude: eq.coordinates?.[1] || eq.geometry?.coordinates?.[1] || eq.latitude,
     longitude: eq.coordinates?.[0] || eq.geometry?.coordinates?.[0] || eq.longitude,
     magnitude: eq.properties?.mag || eq.magnitude || 0,
+    radius: (eq.properties?.mag || eq.magnitude || 0) * 30,
     color: [255, 0, 0, 150] // Default red color
   }));
 }

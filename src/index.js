@@ -123,7 +123,7 @@ window.initMap = () => {
         filled: true,
         radiusUnits: 'meters',
         radiusScale: 1000,
-        getRadius: d => d.magnitude * 100,
+        getRadius: d => d.radius,
         getPosition: d => [d.longitude, d.latitude],
         getFillColor: d => d.color,
         pickable: true,
@@ -144,36 +144,21 @@ window.initMap = () => {
         radiusPixels: 30,
         intensity: 1,
         threshold: 0.05,
-        colorRange: [[0, 0, 255, 0], [255, 0, 0, 255]],
-        pickable: true,
-        onHover: (info) => {
-          if (info.object) {
-            updateTooltip(info.x, info.y, info.object);
-          } else {
-            tooltip.style.display = 'none';
-          }
-        }
+        colorRange: [[0, 0, 255, 100], [255, 0, 0, 255]]
       });
     } else {
       layer = new HexagonLayer({
         id: 'hexagon',
         data: data,
         getPosition: d => [d.longitude, d.latitude],
-        getWeight: d => d.magnitude || 0,
-        radius: 50000, // 50km hexagons
-        colorRange: [[0, 0, 255, 0], [255, 0, 0, 255]],
-        coverage: 0.8,
-        elevationRange: [0, 1000],
+        getElevationWeight: d => d.magnitude || 0,
+        colorRange: [[0, 0, 255, 100], [255, 0, 0, 255]],
         elevationScale: 100,
         extruded: true,
-        pickable: true,
-        onHover: (info) => {
-          if (info.object) {
-            updateTooltip(info.x, info.y, info.object);
-          } else {
-            tooltip.style.display = 'none';
-          }
-        }
+        radius: 1609,         
+        opacity: 0.6,        
+        coverage: 0.88,
+        lowerPercentile: 50
       });
     }
     
