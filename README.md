@@ -6,7 +6,9 @@ Requires a Google Maps API key
 View it live on https://deckgl-demo.copy.gdn
 
 ## To run locally
-Replace the GOOGLE_API_KEY in the url to the Google Maps script with your own Google Maps API key
+Set your Google Maps API key in environment variable:  
+On Windows PowerShell: `$env:GOOGLE_API_KEY="your-api-key"`
+On Unix/Linux/Mac: `export GOOGLE_API_KEY="your-api-key"`
 
 ```
 npm run start
