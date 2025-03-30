@@ -1,18 +1,25 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: './src/index.js',
   output: {
-    path: path.resolve(__dirname, 'public'),
-    filename: 'main.js',
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'bundle.js',
+  },
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      }
+    ]
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html',
-      filename: 'index.html',
       templateParameters: {
-        GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || 'GOOGLE_API_KEY'
+        GOOGLE_API_KEY: process.env.GOOGLE_API_KEY || 'YOUR_API_KEY'
       }
     })
   ],
@@ -20,7 +27,7 @@ module.exports = {
     static: {
       directory: path.join(__dirname, 'public'),
     },
-    hot: true,
+    compress: true,
     port: 3000,
   },
 }; 

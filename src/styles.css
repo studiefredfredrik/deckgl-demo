@@ -1,0 +1,68 @@
+.tooltip {
+  position: absolute;
+  z-index: 1;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.tooltip-content {
+  background-color: white;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.tooltip-heading {
+  font-size: 14px;
+}
+
+.tooltip-subheading {
+  font-size: 12px;
+}
+
+.tooltip-description {
+  font-size: 10px;
+  max-width: 100px;
+}
+
+.menu-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+  z-index: 1000;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.control-box {
+  background-color: white;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  min-width: 200px;
+  justify-content: center;
+}
+
+.control-label {
+  font-weight: bold;
+}
+
+.dataset-select {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .menu-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+} 
