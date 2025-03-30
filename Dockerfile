@@ -1,6 +1,7 @@
 FROM node:22-alpine AS build-frontend
 
 COPY ./package*.json ./app/
+COPY ./webpack.config.js ./app/
 COPY ./public/ /app/public/
 COPY ./src/ /app/src/
 COPY ./server.js/ /app/
