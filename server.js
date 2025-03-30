@@ -25,7 +25,7 @@ function setGoogleApiKeyFromEnv(){
             return
         }
 
-        const replaced = contents.replace(`<%= GOOGLE_API_KEY %>`, process.env.GOOGLE_API_KEY);
+        const replaced = contents.replace(`GOOGLE_API_KEY`, process.env.GOOGLE_API_KEY);
         writeFile(indexHtmlFilePath, replaced, 'utf-8', function (err) {
             if(err){
                 throw err    
